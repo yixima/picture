@@ -78,6 +78,7 @@ def main():
     ap.add_argument('--weights', default='RealESRGAN_x4plus.pth')
     ap.add_argument('--min-width', type=int, default=2000)
     ap.add_argument('--max-width', type=int, default=4000)
+    ap.add_argument('--passes', type=int, default=None, help='force number of x4 passes (default: automatic)')
     ap.add_argument('--dpi', type=int, default=300)
     a = ap.parse_args()
     t0 = time.time()
@@ -92,6 +93,8 @@ def main():
     x = torch.from_numpy(np.asarray(im).astype(np.float32) / 255.).permute(2, 0, 1).unsqueeze(0)
     # one x4 pass normally; a second pass only if x4 still falls far short (< 80%) of min_width
     passes = 0 if w0 >= a.min_width else (1 if w0 * 4 >= a.min_width * 0.8 else 2)
+    if a.passes is not None:
+        passes = a.passes
     for p in range(passes):
         x = run(model, x).clamp_(0, 1)
         print(f'pass {p + 1}: {x.shape[3]}x{x.shape[2]}  ({time.time() - t0:.0f}s)')
