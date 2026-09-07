@@ -1,0 +1,6 @@
+RealESRGAN_x4plus.pth
+*.jpg
+*.jpeg
+*.png
+*.html
+__pycache__/
