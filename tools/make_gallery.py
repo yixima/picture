@@ -64,7 +64,14 @@ document.querySelectorAll('button[data-i]').forEach(b => b.addEventListener('cli
   const img = document.querySelectorAll('.card img')[i];
   st.textContent = '準備中…';
   try {{
-    const blob = await (await fetch(img.src)).blob();
+    // decode the data URI ourselves: fetch() on data: URLs is blocked by the page's security policy
+    const src = img.getAttribute('src');
+    const comma = src.indexOf(',');
+    const mime = src.slice(5, src.indexOf(';'));
+    const bin = atob(src.slice(comma + 1));
+    const bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    const blob = new Blob([bytes], {{ type: mime }});
     const r = await dl.save({{ filename: ITEMS[i].name, data: blob }});
     st.textContent = r && r.status === 'saved' ? '保存しました' : '保存しました';
   }} catch (e) {{
