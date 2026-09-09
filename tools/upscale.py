@@ -87,12 +87,19 @@ def main():
     sd = sd.get('params_ema', sd.get('params', sd))
     model.load_state_dict(sd, strict=True)
     model.eval()
-    im = ImageOps.exif_transpose(Image.open(a.inp)).convert('RGB')
+    im = ImageOps.exif_transpose(Image.open(a.inp))
+    if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+        # flatten transparency onto white instead of letting hidden pixels leak through
+        rgba = im.convert('RGBA')
+        bg = Image.new('RGBA', rgba.size, (255, 255, 255, 255))
+        im = Image.alpha_composite(bg, rgba)
+        print('flattened alpha onto white')
+    im = im.convert('RGB')
     w0, h0 = im.size
     print(f'input {w0}x{h0}')
     x = torch.from_numpy(np.asarray(im).astype(np.float32) / 255.).permute(2, 0, 1).unsqueeze(0)
     # one x4 pass normally; a second pass only if x4 still falls far short (< 80%) of min_width
-    passes = 0 if w0 >= a.min_width else (1 if w0 * 4 >= a.min_width * 0.8 else 2)
+    passes = 0 if w0 >= a.min_width else (1 if w0 * 4 >= a.min_width * 0.7 else 2)
     if a.passes is not None:
         passes = a.passes
     for p in range(passes):
