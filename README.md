@@ -20,7 +20,7 @@ Claude Code のセッションから使う前提で書かれています。
 ## 使い方（Claude Code 内）
 
 ```bash
-pip install pillow numpy torch --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+python3 -m pip install pillow numpy torch --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
 cd tools && curl -L -O https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth
 # in/ に元画像を置いてから
 bash batch.sh
@@ -40,3 +40,7 @@ python3 make_gallery.py gallery.html "ページ名" out/*.jpg   # 合計 11MB �
 
 - ドライブのフォルダを「リンクを知っている全員（閲覧者）」にすると、`https://drive.google.com/uc?export=download&id=<ID>` で直接取得できる。作業後は「制限付き」に戻す。
 - ドライブへの書き戻しは実用的でないため、結果は納品ページ（Artifact）で渡す。
+
+## 注意：AI 超解像が向かない画像
+
+細かい織り目・網点・スキャン線が画素の限界付近にある写真（生地のアップなど）では、Real-ESRGAN が模様を硬い縞に作り変えることがある。その場合は AI を使わず、Lanczos 4 倍＋軽いアンシャープマスクで仕上げる（`docs/gazo_UP_20260907.md` 第 4 回を参照）。判断は、まず 200px 程度の切り出しで両方式を試して目視する。
